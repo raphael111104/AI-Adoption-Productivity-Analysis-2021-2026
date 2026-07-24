@@ -1,0 +1,10 @@
+# Python / Jupyter
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# OS / Environment files
+.DS_Store
+Thumbs.db
+*.log

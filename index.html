@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Adoption & Productivity Analytics (2021–2026)</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-mark">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <span class="brand-title">AI Metrics</span>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="filter-header">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    <span>Filters</span>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-industry">Industry Sector</label>
+                    <select id="filter-industry">
+                        <option value="ALL">All Industries</option>
+                        <option value="Software Development">Software Development</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Education">Education</option>
+                        <option value="Creative & Design">Creative & Design</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-tool">Primary AI Tool</label>
+                    <select id="filter-tool">
+                        <option value="ALL">All Tools</option>
+                        <option value="ChatGPT (OpenAI)">ChatGPT (OpenAI)</option>
+                        <option value="Claude (Anthropic)">Claude (Anthropic)</option>
+                        <option value="GitHub Copilot">GitHub Copilot</option>
+                        <option value="DeepSeek">DeepSeek</option>
+                        <option value="Gemini (Google)">Gemini (Google)</option>
+                        <option value="Perplexity">Perplexity</option>
+                        <option value="Midjourney">Midjourney</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-location">Region</label>
+                    <select id="filter-location">
+                        <option value="ALL">All Regions</option>
+                        <option value="North America">North America</option>
+                        <option value="Europe">Europe</option>
+                        <option value="Asia-Pacific">Asia-Pacific</option>
+                        <option value="Latin America">Latin America</option>
+                        <option value="Middle East & Africa">Middle East & Africa</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-experience">Seniority Level</label>
+                    <select id="filter-experience">
+                        <option value="ALL">All Seniorities</option>
+                        <option value="Junior (0-3 yrs)">Junior (0-3 yrs)</option>
+                        <option value="Mid-Level (4-8 yrs)">Mid-Level (4-8 yrs)</option>
+                        <option value="Senior (9-15 yrs)">Senior (9-15 yrs)</option>
+                        <option value="Veteran (>15 yrs)">Veteran (>15 yrs)</option>
+                    </select>
+                </div>
+
+                <button id="reset-filters" class="btn-secondary">Reset Filters</button>
+            </div>
+
+            <div class="sidebar-footer">
+                <span class="version-label">Report v2.4 • 2021–2026</span>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-panel">
+            <!-- Header Section -->
+            <header class="top-nav">
+                <div class="header-titles">
+                    <h1>AI Adoption & Productivity Overview</h1>
+                    <p>Quantitative analysis of global user metrics, token usage, and productivity impacts</p>
+                </div>
+                <div class="status-indicator">
+                    <span class="dot"></span>
+                    <span>15,000 Verified Users</span>
+                </div>
+            </header>
+
+            <!-- Metrics Overview -->
+            <section class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-head">
+                        <span class="metric-label">Active Users Sampled</span>
+                        <div class="metric-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="metric-value" id="kpi-users">15,000</div>
+                    <div class="metric-meta">Across 5 global regions</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-head">
+                        <span class="metric-label">Avg Daily Tokens / User</span>
+                        <div class="metric-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="metric-value" id="kpi-tokens">8,958</div>
+                    <div class="metric-meta">Tokens consumed daily</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-head">
+                        <span class="metric-label">Tasks Automated / Week</span>
+                        <div class="metric-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="metric-value" id="kpi-tasks">1.91</div>
+                    <div class="metric-meta">Automated workflow tasks</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-head">
+                        <span class="metric-label">Avg Productivity Gain</span>
+                        <div class="metric-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="metric-value highlight" id="kpi-gain">11.2%</div>
+                    <div class="metric-meta">Overall efficiency lift</div>
+                </div>
+            </section>
+
+            <!-- Visual Charts Grid -->
+            <section class="visuals-grid">
+                <div class="viz-card col-span-2">
+                    <div class="viz-header">
+                        <div>
+                            <h2>AI Tool Adoption & Productivity Gain</h2>
+                            <span class="viz-subtitle">User adoption volume vs percentage productivity increase</span>
+                        </div>
+                    </div>
+                    <div class="viz-body">
+                        <canvas id="chart-tools"></canvas>
+                    </div>
+                </div>
+
+                <div class="viz-card col-span-2">
+                    <div class="viz-header">
+                        <div>
+                            <h2>Macro Trend (2021–2026)</h2>
+                            <span class="viz-subtitle">Global active users growth and efficiency gain timeline</span>
+                        </div>
+                    </div>
+                    <div class="viz-body">
+                        <canvas id="chart-macro"></canvas>
+                    </div>
+                </div>
+
+                <div class="viz-card">
+                    <div class="viz-header">
+                        <div>
+                            <h2>Productivity Gain by Industry</h2>
+                            <span class="viz-subtitle">Sector benchmark results</span>
+                        </div>
+                    </div>
+                    <div class="viz-body">
+                        <canvas id="chart-industry"></canvas>
+                    </div>
+                </div>
+
+                <div class="viz-card">
+                    <div class="viz-header">
+                        <div>
+                            <h2>Productivity by Seniority Group</h2>
+                            <span class="viz-subtitle">Experience level parity check</span>
+                        </div>
+                    </div>
+                    <div class="viz-body">
+                        <canvas id="chart-experience"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Table -->
+            <section class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h2>User Level Dataset Sample</h2>
+                        <span class="viz-subtitle">Granular response records</span>
+                    </div>
+                    <div class="search-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="table-search" placeholder="Search role, region, tool...">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="user-table">
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Industry</th>
+                                <th>Job Role</th>
+                                <th>Region</th>
+                                <th>Exp</th>
+                                <th>AI Tool</th>
+                                <th>Daily Tokens</th>
+                                <th>Tasks Auto/Wk</th>
+                                <th>Productivity Gain</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
