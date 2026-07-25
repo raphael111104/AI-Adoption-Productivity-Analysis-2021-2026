@@ -156,24 +156,35 @@ ai adoption & productivity/
 
 ---
 
-## 🚀 Cara Menjalankan
+## 🚀 Cara Menjalankan Project
 
-### 1. Web Dashboard
-Buka `index.html` langsung di browser **atau** jalankan via local server:
+### 1. Web Dashboard (Wajib via Local HTTP Server)
+> [!IMPORTANT]
+> **Catatan Keamanan Browser (CORS restriction)**:  
+> Karena dashboard menggunakan fitur `fetch()` dinamis dan parser `PapaParse` untuk membaca dataset CSV, membuka file `index.html` langsung melalui protokol `file://` akan diblokir oleh kebijakan keamanan CORS di mayoritas browser modern.  
+> **Wajib** menjalankan aplikasi melalui Local HTTP Server:
+
 ```bash
-# Opsi A: Python built-in server (dari root folder project)
+# Jalankan Local HTTP Server dari root folder project:
 python -m http.server 8080
-# Akses: http://localhost:8080
 
-# Opsi B: VS Code Live Server Extension
-# Klik kanan index.html → "Open with Live Server"
+# Kemudian buka browser dan akses:
+http://localhost:8080
 ```
+*Atau gunakan ekstensi **Live Server** di VS Code (Klik kanan `index.html` → "Open with Live Server").*
 
-### 2. Regenerasi Charts & Enriched Dataset
+### 2. 🌐 Opsi Deployment Publik
+Aplikasi web ini bersifat *static & client-side dynamic* yang siap untuk didaftarkan (*zero-config deployment*) ke platform hosting publik:
+- **Vercel**: Hubungkan repositori GitHub dan deploy root directory.
+- **Netlify**: Drag-and-drop folder project ke Netlify Drop atau hubungkan via Git.
+- **GitHub Pages**: Aktifkan GitHub Pages pada tab *Settings → Pages* repositori GitHub (`main` branch / root).
+
+---
+
+### 3. Regenerasi Charts & Enriched Dataset
 ```bash
-# Jalankan dari folder scripts/
-cd scripts
-python run_eda.py
+# Jalankan dari root folder project:
+python scripts/run_eda.py
 ```
 > Output: memperbarui `data/user_level_ai_adoption_enriched.csv` dan semua file `charts/*.png`
 

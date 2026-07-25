@@ -21,78 +21,150 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadData() {
+    showLoading();
+    hideError();
+
+    // Check if opened via file:// protocol which blocks CORS fetch
+    if (window.location.protocol === 'file:') {
+        showError(
+            `<strong>⚠️ Local Browser CORS Restriction Notice:</strong><br>` +
+            `Browsers block fetching local CSV datasets when opening files via <code>file://</code> protocol.<br>` +
+            `To enable dynamic dataset parsing, please launch a local HTTP server by running:<br>` +
+            `<code>python -m http.server 8080</code> or <code>npx serve</code> in the project directory, then navigate to <a href="http://localhost:8080" target="_blank" style="color: #38bdf8; text-decoration: underline;">http://localhost:8080</a>.`
+        );
+        hideLoading();
+        return;
+    }
+
     try {
         const [userResp, macroResp] = await Promise.all([
             fetch('data/user_level_ai_adoption_enriched.csv'),
             fetch('data/ai_adoption_productivity_2021_2026.csv')
         ]);
 
-        if (userResp.ok) {
-            const userCsvText = await userResp.text();
-            fullUserData = parseCSV(userCsvText);
-            console.log(`Loaded ${fullUserData.length} user records dynamically.`);
-        }
+        if (!userResp.ok) throw new Error(`HTTP ${userResp.status} - Failed to fetch user dataset`);
+        if (!macroResp.ok) throw new Error(`HTTP ${macroResp.status} - Failed to fetch macro dataset`);
 
-        if (macroResp.ok) {
-            const macroCsvText = await macroResp.text();
-            fullMacroData = parseMacroCSV(macroCsvText);
-            console.log(`Loaded ${fullMacroData.length} macro records dynamically.`);
-        }
-        
+        const userCsvText = await userResp.text();
+        const macroCsvText = await macroResp.text();
+
+        fullUserData = parseCSV(userCsvText);
+        fullMacroData = parseMacroCSV(macroCsvText);
+
+        console.log(`Successfully parsed ${fullUserData.length} user records and ${fullMacroData.length} macro records via PapaParse.`);
+
         applyFilters();
     } catch (err) {
-        console.warn("CSV Fetch fallback triggered:", err);
+        console.error("Data loading error:", err);
+        showError(
+            `<strong>⚠️ Dataset Loading Failure:</strong> Unable to load CSV dataset files.<br>` +
+            `Error: <code>${err.message || err}</code><br>` +
+            `Please ensure local server is running: <code>python -m http.server 8080</code>`
+        );
+    } finally {
+        hideLoading();
     }
 }
 
 function parseCSV(text) {
+    if (typeof Papa === 'undefined') {
+        console.warn("PapaParse not loaded, falling back to basic parser.");
+        return fallbackParseCSV(text);
+    }
+
+    const results = Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: true
+    });
+
+    if (results.errors && results.errors.length > 0) {
+        console.warn("PapaParse warnings/errors:", results.errors);
+    }
+
+    return results.data.map(row => ({
+        ...row,
+        Experience_Years: parseInt(row.Experience_Years) || 0,
+        Daily_Token_Usage: parseInt(row.Daily_Token_Usage) || 0,
+        Tasks_Automated_Per_Week: parseInt(row.Tasks_Automated_Per_Week) || 0,
+        Productivity_Gain_Percent: parseFloat(row.Productivity_Gain_Percent) || 0
+    }));
+}
+
+function parseMacroCSV(text) {
+    if (typeof Papa === 'undefined') {
+        return fallbackParseMacroCSV(text);
+    }
+
+    const results = Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: true
+    });
+
+    return results.data.map(row => ({
+        ...row,
+        Global_Users_Millions: parseFloat(row['Global Active Users (Millions)']) || 0,
+        Avg_Tokens: parseFloat(row['Average Tokens/User/Day']) || 0,
+        Productivity_Gain_Percent: parseFloat(row['Productivity Gain (%)']) || 0
+    }));
+}
+
+function fallbackParseCSV(text) {
     const lines = text.trim().split(/\r?\n/);
     if (lines.length < 2) return [];
-    
     const headers = lines[0].split(',').map(h => h.trim());
-    const data = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue;
-        const vals = lines[i].split(',').map(v => v.trim());
+    return lines.slice(1).filter(l => l.trim()).map(line => {
+        const vals = line.split(',').map(v => v.trim());
         const row = {};
-        headers.forEach((h, idx) => {
-            row[h] = vals[idx];
-        });
-        
-        // Parse numerical fields
+        headers.forEach((h, idx) => row[h] = vals[idx]);
         row.Experience_Years = parseInt(row.Experience_Years) || 0;
         row.Daily_Token_Usage = parseInt(row.Daily_Token_Usage) || 0;
         row.Tasks_Automated_Per_Week = parseInt(row.Tasks_Automated_Per_Week) || 0;
         row.Productivity_Gain_Percent = parseFloat(row.Productivity_Gain_Percent) || 0;
-        
-        data.push(row);
-    }
-    return data;
+        return row;
+    });
 }
 
-function parseMacroCSV(text) {
+function fallbackParseMacroCSV(text) {
     const lines = text.trim().split(/\r?\n/);
     if (lines.length < 2) return [];
-    
     const headers = lines[0].split(',').map(h => h.trim());
-    const data = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue;
-        const vals = lines[i].split(',').map(v => v.trim());
+    return lines.slice(1).filter(l => l.trim()).map(line => {
+        const vals = line.split(',').map(v => v.trim());
         const row = {};
-        headers.forEach((h, idx) => {
-            row[h] = vals[idx];
-        });
-        
+        headers.forEach((h, idx) => row[h] = vals[idx]);
         row.Global_Users_Millions = parseFloat(row['Global Active Users (Millions)']) || 0;
         row.Avg_Tokens = parseFloat(row['Average Tokens/User/Day']) || 0;
         row.Productivity_Gain_Percent = parseFloat(row['Productivity Gain (%)']) || 0;
-        
-        data.push(row);
+        return row;
+    });
+}
+
+function showLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.classList.remove('hidden');
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.classList.add('hidden');
+}
+
+function showError(htmlContent) {
+    const banner = document.getElementById('error-banner');
+    if (banner) {
+        banner.innerHTML = htmlContent;
+        banner.classList.remove('hidden');
     }
-    return data;
+}
+
+function hideError() {
+    const banner = document.getElementById('error-banner');
+    if (banner) {
+        banner.classList.add('hidden');
+        banner.innerHTML = '';
+    }
 }
 
 function getAggregatedMacroData(indFilter) {
