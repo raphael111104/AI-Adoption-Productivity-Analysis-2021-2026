@@ -129,11 +129,11 @@ function initCharts() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#94a3b8', usePointStyle: true } } },
+            plugins: { legend: { labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 8, font: { size: 10 } } } },
             scales: {
-                x: { ticks: { color: '#94a3b8' }, grid: { color: '#1a2438' } },
-                y: { type: 'linear', position: 'left', ticks: { color: '#38bdf8' }, grid: { color: '#1a2438' } },
-                y1: { type: 'linear', position: 'right', ticks: { color: '#34d399' }, grid: { drawOnChartArea: false } }
+                x: { ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45, autoSkip: true }, grid: { color: '#1a2438' } },
+                y: { type: 'linear', position: 'left', ticks: { color: '#38bdf8', font: { size: 10 } }, grid: { color: '#1a2438' } },
+                y1: { type: 'linear', position: 'right', ticks: { color: '#34d399', font: { size: 10 } }, grid: { drawOnChartArea: false } }
             }
         }
     });
@@ -146,7 +146,7 @@ function initCharts() {
             labels: macroData.map(d => d.period),
             datasets: [
                 {
-                    label: 'Global Active Users (Millions)',
+                    label: 'Global Active Users (M)',
                     data: macroData.map(d => d.users),
                     borderColor: '#818cf8',
                     backgroundColor: 'rgba(129, 140, 248, 0.08)',
@@ -167,10 +167,10 @@ function initCharts() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#94a3b8', usePointStyle: true } } },
+            plugins: { legend: { labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 8, font: { size: 10 } } } },
             scales: {
-                x: { ticks: { color: '#94a3b8' }, grid: { color: '#1a2438' } },
-                y: { ticks: { color: '#94a3b8' }, grid: { color: '#1a2438' } }
+                x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1a2438' } },
+                y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1a2438' } }
             }
         }
     });
@@ -186,8 +186,8 @@ function initCharts() {
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-                x: { ticks: { color: '#94a3b8' }, grid: { color: '#1a2438' } },
-                y: { ticks: { color: '#94a3b8' }, grid: { color: '#1a2438' } }
+                x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1a2438' } },
+                y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1a2438' } }
             }
         }
     });
@@ -202,8 +202,8 @@ function initCharts() {
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-                x: { ticks: { color: '#94a3b8' }, grid: { color: '#1a2438' } },
-                y: { ticks: { color: '#94a3b8' }, grid: { color: '#1a2438' } }
+                x: { ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45, autoSkip: true }, grid: { color: '#1a2438' } },
+                y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1a2438' } }
             }
         }
     });
@@ -340,5 +340,40 @@ function setupEventListeners() {
         });
         document.getElementById('table-search').value = '';
         applyFilters();
+    });
+
+    setupMobileDrawer();
+}
+
+function setupMobileDrawer() {
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
+    const closeSidebarBtn = document.getElementById('close-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const sidebar = document.getElementById('sidebar');
+
+    function openDrawer() {
+        sidebar?.classList.add('open');
+        backdrop?.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDrawer() {
+        sidebar?.classList.remove('open');
+        backdrop?.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    if (mobileToggle) mobileToggle.addEventListener('click', openDrawer);
+    if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeDrawer);
+    if (backdrop) backdrop.addEventListener('click', closeDrawer);
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 900) {
+            closeDrawer();
+        }
+        chartToolsInstance?.resize();
+        chartMacroInstance?.resize();
+        chartIndustryInstance?.resize();
+        chartExpInstance?.resize();
     });
 }
