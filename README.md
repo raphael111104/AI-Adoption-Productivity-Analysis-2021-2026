@@ -3,6 +3,10 @@
 > **End-to-End Data Analytics Portfolio Project**  
 > Mengukur, menganalisis, dan memvisualisasikan dampak adopsi AI terhadap produktivitas kerja di berbagai industri, profesi, dan wilayah secara global.
 
+> [!IMPORTANT]
+> **Synthetic Data Disclosure**:  
+> This portfolio project uses synthetic data. Findings demonstrate analytical methods and should not be interpreted as empirical evidence about real-world workers or organizations.
+
 ---
 
 ## 📌 Latar Belakang
