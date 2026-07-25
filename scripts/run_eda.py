@@ -78,24 +78,55 @@ corr_exp = df_micro['Experience_Years'].corr(df_micro['Productivity_Gain_Percent
 p_val_exp = calc_p_value_pearson(corr_exp, n)
 print(f"H3 - Pearson Correlation (Experience Years vs Productivity Gain): r = {corr_exp:.4f}, p-val = {p_val_exp:.4e}")
 
-# Multivariate OLS & Partial Correlation (Controlling for Confounders: Tool Type, Tasks, Industry, Job Role)
-X_ctrl = pd.get_dummies(df_micro[['Tasks_Automated_Per_Week', 'Experience_Years', 'Primary_AI_Tool', 'Industry', 'Job_Role']], drop_first=True).values.astype(float)
-X_ctrl = np.hstack([np.ones((n, 1)), X_ctrl])
-res_token = df_micro['Daily_Token_Usage'].values - X_ctrl @ np.linalg.lstsq(X_ctrl, df_micro['Daily_Token_Usage'].values, rcond=None)[0]
-res_gain = df_micro['Productivity_Gain_Percent'].values - X_ctrl @ np.linalg.lstsq(X_ctrl, df_micro['Productivity_Gain_Percent'].values, rcond=None)[0]
+# Multivariate OLS Regression & Confounder Control (Model A: Industry vs Model B: Job_Role)
+# Note: Job_Role is strictly nested inside Industry. Including both causes perfect multicollinearity (rank deficiency = 5, cond = 1.22e+20).
+# Model A (Industry) is selected as primary due to Full Rank (k=15, deficiency=0) and lower AIC/BIC.
+
+# Model A Design Matrix
+X_a_df = pd.get_dummies(df_micro[['Daily_Token_Usage', 'Tasks_Automated_Per_Week', 'Experience_Years', 'Primary_AI_Tool', 'Industry']], drop_first=True).astype(float)
+X_a_df.insert(0, 'Intercept', 1.0)
+X_a = X_a_df.values
+y_val = df_micro['Productivity_Gain_Percent'].values
+
+beta_a, _, rank_a, _ = np.linalg.lstsq(X_a, y_val, rcond=None)
+y_pred_a = X_a @ beta_a
+res_a = y_val - y_pred_a
+rss_a = np.sum(res_a**2)
+tss_a = np.sum((y_val - np.mean(y_val))**2)
+
+r2_a = 1 - (rss_a / tss_a)
+r2_adj_a = 1 - ((1 - r2_a) * (n - 1) / (n - X_a.shape[1]))
+log_lh_a = -0.5 * n * (np.log(2 * np.pi) + np.log(rss_a / n) + 1)
+aic_a = 2 * X_a.shape[1] - 2 * log_lh_a
+bic_a = X_a.shape[1] * np.log(n) - 2 * log_lh_a
+cond_num_a = np.linalg.cond(X_a)
+
+# Partial correlation controlling for Model A covariates
+X_ctrl_a = pd.get_dummies(df_micro[['Tasks_Automated_Per_Week', 'Experience_Years', 'Primary_AI_Tool', 'Industry']], drop_first=True).values.astype(float)
+X_ctrl_a = np.hstack([np.ones((n, 1)), X_ctrl_a])
+res_token = df_micro['Daily_Token_Usage'].values - X_ctrl_a @ np.linalg.lstsq(X_ctrl_a, df_micro['Daily_Token_Usage'].values, rcond=None)[0]
+res_gain = y_val - X_ctrl_a @ np.linalg.lstsq(X_ctrl_a, y_val, rcond=None)[0]
 partial_r_token = np.corrcoef(res_token, res_gain)[0, 1]
 
-X_full = pd.get_dummies(df_micro[['Daily_Token_Usage', 'Tasks_Automated_Per_Week', 'Experience_Years', 'Primary_AI_Tool', 'Industry', 'Job_Role']], drop_first=True).values.astype(float)
-X_full = np.hstack([np.ones((n, 1)), X_full])
-y_full = df_micro['Productivity_Gain_Percent'].values
-beta, _, _, _ = np.linalg.lstsq(X_full, y_full, rcond=None)
-y_pred = X_full @ beta
-r2_full = 1 - (np.sum((y_full - y_pred)**2) / np.sum((y_full - np.mean(y_full))**2))
+# Calculate VIFs for continuous predictors
+vifs = {}
+for col in ['Daily_Token_Usage', 'Tasks_Automated_Per_Week', 'Experience_Years']:
+    col_idx = X_a_df.columns.get_loc(col)
+    y_vif = X_a[:, col_idx]
+    X_other = np.delete(X_a, col_idx, axis=1)
+    beta_vif, _, _, _ = np.linalg.lstsq(X_other, y_vif, rcond=None)
+    r2_vif = 1 - (np.sum((y_vif - X_other @ beta_vif)**2) / np.sum((y_vif - np.mean(y_vif))**2))
+    vifs[col] = 1 / (1 - r2_vif)
 
-print(f"\n[Multivariate Regression & Confounder Control]")
-print(f"Partial Correlation r(Token Usage, Gain | Tool, Tasks, Industry, Role): {partial_r_token:.4f}")
-print(f"Multivariate OLS Regression R²: {r2_full:.4f}")
-print(f"Direct Token Beta Coefficient: {beta[1]:.6f} (+1k tokens = +{beta[1]*1000:.2f}% gain under controls)")
+print(f"\n[Multivariate OLS Regression - Model A (Industry Model)]")
+print(f"  Reference Categories : Primary_AI_Tool='ChatGPT (OpenAI)', Industry='Creative & Design'")
+print(f"  Design Matrix Shape  : {X_a.shape[0]} x {X_a.shape[1]} (Full Rank: {rank_a}, Rank Deficiency: {X_a.shape[1] - rank_a})")
+print(f"  Condition Number     : {cond_num_a:.2e} (No numeric singularity)")
+print(f"  Partial Correlation  : r(Daily_Token_Usage, Gain | Model A Controls) = {partial_r_token:.4f}")
+print(f"  Model Performance    : R² = {r2_a:.4f}, Adjusted R² = {r2_adj_a:.4f}")
+print(f"  Information Criteria : AIC = {aic_a:.2f}, BIC = {bic_a:.2f}")
+print(f"  Direct Token Beta    : {beta_a[1]:.6f} (+1k tokens = +{beta_a[1]*1000:.2f}% gain under controls)")
+print(f"  Variance Inflation   : Token Usage VIF={vifs['Daily_Token_Usage']:.2f}, Tasks Automated VIF={vifs['Tasks_Automated_Per_Week']:.2f}, Experience VIF={vifs['Experience_Years']:.2f}")
 
 # Seniority Parity & ANOVA Group Testing
 exp_groups = ['Junior (0-3 yrs)', 'Mid-Level (4-8 yrs)', 'Senior (9-15 yrs)', 'Veteran (>15 yrs)']

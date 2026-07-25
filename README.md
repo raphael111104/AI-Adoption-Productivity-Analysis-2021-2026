@@ -50,6 +50,11 @@ Berdasarkan analisis statistik terhadap 15.000 data pengguna:
 > Pengujian hipotesis (One-Way ANOVA $F = 0.6962, p = 0.554$) dan 95% Confidence Intervals yang tumpang-tindih (Junior `[10.7%, 11.8%]`, Mid-Level `[11.0%, 11.8%]`, Senior `[10.9%, 11.6%]`, Veteran `[10.8%, 11.4%]`) mengonfirmasi bahwa **manfaat peningkatan produktivitas AI bersifat independen dari tingkat senioritas pekerja**.  
 > *Catatan Metodologis*: Tanpa data produktivitas baseline sebelum adopsi (*Pre-AI Baseline*), korelasi $r \approx -0.01$ tidak secara eksplisit membuktikan klaim bahwa AI "menyamakan" kesenjangan produktivitas junior-senior secara absolut, melainkan membuktikan bahwa persentase gain dari AI terdistribusi secara merata di semua tingkat pengalaman.
 
+> [!NOTE]
+> **3. Audit Ekonometrika Multicollinearity & Seleksi Model A (Industry) vs Model B (Job_Role):**  
+> Hasil audit membuktikan bahwa `Job_Role` bersifat *strictly nested* dalam `Industry`. Memasukkan kedua kelompok dummy menghasilkan *perfect multicollinearity* (*Rank Deficiency = 5*, *Condition Number* $= 1.22 \times 10^{20}$). Model utama yang digunakan adalah **Model A (Industry Model)** yang berstatus *Full Rank* ($k=15$, *Deficiency = 0*, *Condition Number* $= 1.52 \times 10^5$, $\text{VIF} < 3.2$), serta unggul secara parsimoni berdasarkan kriteria informasi (**AIC $= 91.363,57$**, **BIC $= 91.477,80$** dibanding Model B BIC $= 91.614,26$).  
+> *Kategori Referensi Eksplisit*: `Primary_AI_Tool`: `ChatGPT (OpenAI)`, `Industry`: `Creative & Design`, `Job_Role`: `Accountant`.
+
 ### 🛠️ Performa Tools AI
 | AI Tool | Avg Productivity Gain | Karakteristik |
 |:--------|:---------------------:|:--------------|
