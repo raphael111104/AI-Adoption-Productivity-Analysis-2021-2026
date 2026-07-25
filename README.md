@@ -55,6 +55,15 @@ Berdasarkan analisis statistik terhadap 15.000 data pengguna:
 > Hasil audit membuktikan bahwa `Job_Role` bersifat *strictly nested* dalam `Industry`. Memasukkan kedua kelompok dummy menghasilkan *perfect multicollinearity* (*Rank Deficiency = 5*, *Condition Number* $= 1.22 \times 10^{20}$). Model utama yang digunakan adalah **Model A (Industry Model)** yang berstatus *Full Rank* ($k=15$, *Deficiency = 0*, *Condition Number* $= 1.52 \times 10^5$, $\text{VIF} < 3.2$), serta unggul secara parsimoni berdasarkan kriteria informasi (**AIC $= 91.363,57$**, **BIC $= 91.477,80$** dibanding Model B BIC $= 91.614,26$).  
 > *Kategori Referensi Eksplisit*: `Primary_AI_Tool`: `ChatGPT (OpenAI)`, `Industry`: `Creative & Design`, `Job_Role`: `Accountant`.
 
+> [!NOTE]
+> **4. Hasil Regresi OLS Inferensial (HC3 Robust Standard Errors & Diagnostik Residual):**  
+> Menggunakan `statsmodels.formula.api.ols()` dengan **HC3 Robust Standard Errors** ($N=15.000$, $R^2 = 0.8074$, Adjusted $R^2 = 0.8072$, Residual Std Error $= 5.0836$):  
+> - `Daily_Token_Usage`: $\beta = +0.001071$, Robust $\text{SE} = 0.000015$, $z = 72.172$, $p < 0.0001$, $95\% \text{ CI} = [0.001042, 0.001100]$.  
+> - `Tasks_Automated_Per_Week`: $\beta = +1.9926$, Robust $\text{SE} = 0.0738$, $z = 27.014$, $p < 0.0001$, $95\% \text{ CI} = [1.848, 2.137]$.  
+> - `Experience_Years`: $\beta = -0.0115$, Robust $\text{SE} = 0.0056$, $z = -2.033$, $p = 0.042$, $95\% \text{ CI} = [-0.0225, -0.0004]$.  
+> - **Uji Heteroskedastisitas Breusch-Pagan**: $\text{LM Stat} = 5183.02 (p < 0.0001) \implies$ Mengonfirmasi heteroskedastisitas signifikan, memvalidasi penggunaan HC3 robust SE.  
+> - **Uji Normalitas Residual Jarque-Bera**: $\text{JB Stat} = 11214.40 (p < 0.0001) \implies$ Distribusi residual memanjang ke kanan (*right-skewed / leptokurtic*).
+
 ### 🛠️ Performa Tools AI
 | AI Tool | Avg Productivity Gain | Karakteristik |
 |:--------|:---------------------:|:--------------|
