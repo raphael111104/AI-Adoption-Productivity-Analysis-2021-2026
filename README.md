@@ -64,6 +64,10 @@ Berdasarkan analisis statistik terhadap 15.000 data pengguna:
 > - **Uji Heteroskedastisitas Breusch-Pagan**: $\text{LM Stat} = 5183.02 (p < 0.0001) \implies$ Mengonfirmasi heteroskedastisitas signifikan, memvalidasi penggunaan HC3 robust SE.  
 > - **Uji Normalitas Residual Jarque-Bera**: $\text{JB Stat} = 11214.40 (p < 0.0001) \implies$ Distribusi residual memanjang ke kanan (*right-skewed / leptokurtic*).
 
+> [!NOTE]
+> **5. Evaluasi Model Interaksi (`Experience_Years × Primary_AI_Tool`):**  
+> Pengujian model interaksi dilakukan secara eksplisit untuk memeriksa apakah tingkat pengalaman kerja memoderasi dampak jenis perangkat AI terhadap produktivitas. **Joint Hypothesis F-Test** untuk seluruh term interaksi menunjukkan $F(6, 14979) = 0.4951 (p = 0.8125 \implies \text{gagal menolak } H_0)$, mengonfirmasi bahwa tidak ada efek moderasi yang signifikan secara statistik antara senioritas dan perangkat AI. Model aditif tanpa interaksi (Baseline Model A) lebih disukai berdasarkan kriteria parsimoni (**AIC $= 91.363,57$** vs **Interaction AIC $= 91.368,47$**).
+
 ### 🛠️ Performa Tools AI
 | AI Tool | Avg Productivity Gain | Karakteristik |
 |:--------|:---------------------:|:--------------|

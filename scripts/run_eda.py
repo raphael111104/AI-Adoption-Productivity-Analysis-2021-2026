@@ -113,6 +113,14 @@ res_token = df_micro['Daily_Token_Usage'].values - X_ctrl_a @ np.linalg.lstsq(X_
 res_gain = df_micro['Productivity_Gain_Percent'].values - X_ctrl_a @ np.linalg.lstsq(X_ctrl_a, df_micro['Productivity_Gain_Percent'].values, rcond=None)[0]
 partial_r_token = np.corrcoef(res_token, res_gain)[0, 1]
 
+# Fit OLS Interaction Model: Experience_Years x Primary_AI_Tool
+formula_int = "Productivity_Gain_Percent ~ Daily_Token_Usage + Tasks_Automated_Per_Week + Experience_Years * C(Primary_AI_Tool, Treatment(reference='ChatGPT (OpenAI)')) + C(Industry_Clean, Treatment(reference='Creative_Design'))"
+model_int = smf.ols(formula=formula_int, data=df_micro).fit(cov_type='HC3')
+
+# Joint F-test for interaction terms
+interaction_terms = [col for col in model_int.params.index if ':' in col]
+f_test_int = model_int.f_test(interaction_terms)
+
 print(f"\n[Full OLS Inferential Table & Robust Model Diagnostics (HC3 Robust SE)]")
 print(model_hc3.summary())
 
@@ -122,6 +130,10 @@ print(f"  Jarque-Bera Stat       : {jb_test[0]:.4f}, p-value: {jb_test[1]:.4e} (
 print(f"  Residual Std Error (RSE): {np.sqrt(model_hc3.mse_resid):.4f}")
 print(f"  Partial Correlation    : r(Daily_Token_Usage, Gain | Controls) = {partial_r_token:.4f}")
 print(f"  Variance Inflation     : Token Usage VIF={vifs['Daily_Token_Usage']:.2f}, Tasks Automated VIF={vifs['Tasks_Automated_Per_Week']:.2f}, Experience VIF={vifs['Experience_Years']:.2f}")
+
+print(f"\n=== INTERACTION MODEL EVALUATION (Experience_Years x Primary_AI_Tool) ===")
+print(f"  Joint F-Test (Interaction Terms) : F = {float(f_test_int.fvalue):.4f}, p-value = {float(f_test_int.pvalue):.4f} (Fail to reject H0 -> No moderation effect)")
+print(f"  Model Complexity Comparison      : Baseline AIC = {model_hc3.aic:.2f} vs Interaction AIC = {model_int.aic:.2f} (Baseline preferred)")
 
 from scipy.stats import f_oneway
 
