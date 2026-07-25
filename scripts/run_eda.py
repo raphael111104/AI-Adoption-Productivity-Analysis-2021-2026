@@ -156,6 +156,44 @@ print(f"\n=== INTERACTION MODEL EVALUATION (Experience_Years x Primary_AI_Tool) 
 print(f"  Joint F-Test (Interaction Terms) : F = {float(f_test_int.fvalue):.4f}, p-value = {float(f_test_int.pvalue):.4f} (Fail to reject H0 -> No moderation effect)")
 print(f"  Model Complexity Comparison      : Baseline AIC = {model_hc3.aic:.2f} vs Interaction AIC = {model_int.aic:.2f} (Baseline preferred)")
 
+# Programmatically Export Structured Model Metrics JSON
+outputs_dir = os.path.join(base_dir, "outputs")
+os.makedirs(outputs_dir, exist_ok=True)
+import json
+
+model_export = {
+    "model_name": "Model A (Industry OLS Model)",
+    "n_observations": int(model_hc3.nobs),
+    "r_squared": float(model_hc3.rsquared),
+    "adjusted_r_squared": float(model_hc3.rsquared_adj),
+    "residual_standard_error": float(np.sqrt(model_hc3.mse_resid)),
+    "aic": float(model_hc3.aic),
+    "bic": float(model_hc3.bic),
+    "covariance_type": "HC3 Robust SE",
+    "breusch_pagan_lm_stat": float(bp_test[0]),
+    "breusch_pagan_p_value": float(bp_test[1]),
+    "jarque_bera_stat": float(jb_test[0]),
+    "jarque_bera_p_value": float(jb_test[1]),
+    "partial_correlation_token_gain": float(partial_r_token),
+    "vifs": {k: float(v) for k, v in vifs.items()},
+    "coefficients": {
+        col: {
+            "coef": float(model_hc3.params[col]),
+            "robust_se": float(model_hc3.bse[col]),
+            "z_stat": float(model_hc3.tvalues[col]),
+            "p_value": float(model_hc3.pvalues[col]),
+            "ci_95_low": float(model_hc3.conf_int().loc[col, 0]),
+            "ci_95_high": float(model_hc3.conf_int().loc[col, 1])
+        } for col in model_hc3.params.index
+    }
+}
+
+json_export_file = os.path.join(outputs_dir, "model_summary.json")
+with open(json_export_file, "w", encoding="utf-8") as f:
+    json.dump(model_export, f, indent=2)
+
+print(f"\nSaved structured model outputs to '{json_export_file}'")
+
 from scipy.stats import f_oneway
 
 # Seniority Parity & ANOVA Group Testing

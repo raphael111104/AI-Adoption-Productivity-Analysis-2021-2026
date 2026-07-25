@@ -1,0 +1,142 @@
+{
+  "model_name": "Model A (Industry OLS Model)",
+  "n_observations": 15000,
+  "r_squared": 0.8073994043337647,
+  "adjusted_r_squared": 0.807219463837313,
+  "residual_standard_error": 5.083571014033682,
+  "aic": 91363.56759567627,
+  "bic": 91477.80467787753,
+  "covariance_type": "HC3 Robust SE",
+  "breusch_pagan_lm_stat": 5183.0243304137575,
+  "breusch_pagan_p_value": 0.0,
+  "jarque_bera_stat": 11214.401041401306,
+  "jarque_bera_p_value": 0.0,
+  "partial_correlation_token_gain": 0.7070659224716471,
+  "vifs": {
+    "Daily_Token_Usage": 3.1732392897978454,
+    "Tasks_Automated_Per_Week": 1.4650635300928498,
+    "Experience_Years": 1.0004595442749713
+  },
+  "coefficients": {
+    "Intercept": {
+      "coef": -1.6423612877207476,
+      "robust_se": 0.2061036618199568,
+      "z_stat": -7.9686177005212215,
+      "p_value": 1.6045899938374199e-15,
+      "ci_95_low": -2.046317041969686,
+      "ci_95_high": -1.2384055334718094
+    },
+    "C(Primary_AI_Tool, Treatment(reference='ChatGPT (OpenAI)'))[T.Claude (Anthropic)]": {
+      "coef": 0.05717654486144104,
+      "robust_se": 0.10034771137960201,
+      "z_stat": 0.5697842439589857,
+      "p_value": 0.5688240433286234,
+      "ci_95_low": -0.13950135537359903,
+      "ci_95_high": 0.25385444509648114
+    },
+    "C(Primary_AI_Tool, Treatment(reference='ChatGPT (OpenAI)'))[T.DeepSeek]": {
+      "coef": 0.3670135684753257,
+      "robust_se": 0.8963834886765618,
+      "z_stat": 0.4094381178497517,
+      "p_value": 0.6822181711417783,
+      "ci_95_low": -1.3898657856671028,
+      "ci_95_high": 2.1238929226177543
+    },
+    "C(Primary_AI_Tool, Treatment(reference='ChatGPT (OpenAI)'))[T.Gemini (Google)]": {
+      "coef": -0.10980839631204495,
+      "robust_se": 0.12703564853744626,
+      "z_stat": -0.8643904099066867,
+      "p_value": 0.38737345929771316,
+      "ci_95_low": -0.358793692198128,
+      "ci_95_high": 0.13917689957403812
+    },
+    "C(Primary_AI_Tool, Treatment(reference='ChatGPT (OpenAI)'))[T.GitHub Copilot]": {
+      "coef": -0.879696428427365,
+      "robust_se": 0.4605463873389256,
+      "z_stat": -1.9101147085537296,
+      "p_value": 0.056118445599855425,
+      "ci_95_low": -1.7823507608216929,
+      "ci_95_high": 0.022957903966962845
+    },
+    "C(Primary_AI_Tool, Treatment(reference='ChatGPT (OpenAI)'))[T.Midjourney]": {
+      "coef": -1.8567493199877998,
+      "robust_se": 0.1435797861717313,
+      "z_stat": -12.931829538783404,
+      "p_value": 2.976505750996245e-38,
+      "ci_95_low": -2.1381605297923554,
+      "ci_95_high": -1.5753381101832442
+    },
+    "C(Primary_AI_Tool, Treatment(reference='ChatGPT (OpenAI)'))[T.Perplexity]": {
+      "coef": 0.1247958307678733,
+      "robust_se": 0.116643760461777,
+      "z_stat": 1.0698886101907497,
+      "p_value": 0.28466945046636316,
+      "ci_95_low": -0.10382173875852678,
+      "ci_95_high": 0.35341340029427337
+    },
+    "C(Industry_Clean, Treatment(reference='Creative_Design'))[T.Education]": {
+      "coef": -0.17838650640166948,
+      "robust_se": 0.13217532794387168,
+      "z_stat": -1.3496203049136477,
+      "p_value": 0.1771378076148311,
+      "ci_95_low": -0.4374453888164286,
+      "ci_95_high": 0.08067237601308963
+    },
+    "C(Industry_Clean, Treatment(reference='Creative_Design'))[T.Finance]": {
+      "coef": -0.1946067006854874,
+      "robust_se": 0.13708678989650205,
+      "z_stat": -1.4195875534937525,
+      "p_value": 0.15572779105264664,
+      "ci_95_low": -0.4632918716388408,
+      "ci_95_high": 0.07407847026786596
+    },
+    "C(Industry_Clean, Treatment(reference='Creative_Design'))[T.Healthcare]": {
+      "coef": -0.004142049055144849,
+      "robust_se": 0.13381465102442702,
+      "z_stat": -0.030953628944477417,
+      "p_value": 0.9753065206761407,
+      "ci_95_low": -0.2664139456668177,
+      "ci_95_high": 0.25812984755652796
+    },
+    "C(Industry_Clean, Treatment(reference='Creative_Design'))[T.Marketing]": {
+      "coef": -0.19672974756430994,
+      "robust_se": 0.13536668705392202,
+      "z_stat": -1.4533099084115468,
+      "p_value": 0.14613772746950546,
+      "ci_95_low": -0.4620435788965015,
+      "ci_95_high": 0.06858408376788161
+    },
+    "C(Industry_Clean, Treatment(reference='Creative_Design'))[T.Software_Development]": {
+      "coef": -0.1104870884267951,
+      "robust_se": 0.1637617911046518,
+      "z_stat": -0.6746817293674349,
+      "p_value": 0.49987799493381624,
+      "ci_95_low": -0.43145430103568444,
+      "ci_95_high": 0.21048012418209422
+    },
+    "Daily_Token_Usage": {
+      "coef": 0.001071066045332414,
+      "robust_se": 1.4840402529728328e-05,
+      "z_stat": 72.17230416674022,
+      "p_value": 0.0,
+      "ci_95_low": 0.0010419793908580692,
+      "ci_95_high": 0.0011001526998067586
+    },
+    "Tasks_Automated_Per_Week": {
+      "coef": 1.9925936505186548,
+      "robust_se": 0.07376077947714042,
+      "z_stat": 27.014270519418652,
+      "p_value": 1.0046977838582618e-160,
+      "ci_95_low": 1.8480251792718585,
+      "ci_95_high": 2.137162121765451
+    },
+    "Experience_Years": {
+      "coef": -0.011490619233692788,
+      "robust_se": 0.005653012650768637,
+      "z_stat": -2.0326540808519886,
+      "p_value": 0.04208748357199362,
+      "ci_95_low": -0.02257032043334862,
+      "ci_95_high": -0.000410918034036957
+    }
+  }
+}

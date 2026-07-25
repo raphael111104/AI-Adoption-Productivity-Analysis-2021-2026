@@ -1,11 +1,21 @@
 # 🤖 AI Adoption & Productivity Analysis (2021–2026)
 
+[![CI Pipeline](https://github.com/raphael111104/AI-Adoption-Productivity-Analysis-2021-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/raphael111104/AI-Adoption-Productivity-Analysis-2021-2026/actions/workflows/ci.yml)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](requirements.txt)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Data Dictionary](https://img.shields.io/badge/Data_Dictionary-DATA__DICTIONARY.md-green.svg)](DATA_DICTIONARY.md)
+
 > **End-to-End Data Analytics Portfolio Project**  
 > Mengukur, menganalisis, dan memvisualisasikan dampak adopsi AI terhadap produktivitas kerja di berbagai industri, profesi, dan wilayah secara global.
 
 > [!IMPORTANT]
 > **Synthetic Data Disclosure**:  
 > This portfolio project uses synthetic data. Findings demonstrate analytical methods and should not be interpreted as empirical evidence about real-world workers or organizations.
+
+> [!TIP]
+> **GitHub Repository Metadata**:  
+> - **Description**: End-to-end data analytics and econometric evaluation of global AI adoption and worker productivity metrics (2021-2026) featuring dynamic BI dashboard, OLS regression, and reproducible Python pipelines.  
+> - **Topics**: `data-analysis`, `econometrics`, `ols-regression`, `data-science`, `analytics-dashboard`, `python`, `data-analytics`, `statistical-analysis`, `reproducibility`
 
 ---
 
@@ -181,17 +191,29 @@ Aplikasi web ini bersifat *static & client-side dynamic* yang siap untuk didafta
 
 ---
 
-### 3. Regenerasi Charts & Enriched Dataset
+### 3. Regenerasi Charts, Model Outputs & Feature Engineering
 ```bash
-# Jalankan dari root folder project:
+# Install dependencies:
+pip install -r requirements.txt
+
+# Jalankan pipeline EDA & ekspor model JSON:
 python scripts/run_eda.py
 ```
-> Output: memperbarui `data/user_level_ai_adoption_enriched.csv` dan semua file `charts/*.png`
+> Output: memperbarui `data/user_level_ai_adoption_enriched.csv`, `outputs/model_summary.json`, dan semua file `charts/*.png`
 
-### 3. Notebook Analisis
+### 4. Menjalankan Unit Tests (Pytest)
 ```bash
-cd notebooks
-jupyter notebook critical_data_analysis.ipynb
+# Jalankan unit test suite untuk memverifikasi integritas data & pemodelan:
+python -m pytest tests/ -v
+```
+
+### 5. Eksekusi Notebook Analisis Reproducible
+```bash
+# Opsi A: Buka secara interaktif di Jupyter
+jupyter notebook notebooks/critical_data_analysis.ipynb
+
+# Opsi B: Eksekusi otomatis secara non-interaktif (CI/CD Automated Execution)
+jupyter nbconvert --to notebook --execute notebooks/critical_data_analysis.ipynb --output executed_notebook.ipynb
 ```
 
 ---
