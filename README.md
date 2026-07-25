@@ -39,15 +39,15 @@ Berdasarkan analisis statistik terhadap 15.000 data pengguna:
 |:----------|:---------|:-----------------:|:--------------------------:|:-----------|
 | H1 | Token Usage → Productivity Gain | **r = 0.88** | **r_partial = 0.71** ($R^2 = 0.81$) | ✅ Korelasi positif kuat, dipengaruhi oleh faktor pembaur (*tool category confounding*) |
 | H2 | Tasks Automated → Productivity Gain | **r = 0.55** | **β = +1.99** per task | ✅ Korelasi positif kuat dengan efek langsung yang signifikan |
-| H3 | Experience Years → Productivity Gain | **r = −0.01** | **F = 0.69** ($p = 0.554$) | ✅ Manfaat AI bersifat independen dari senioritas (*overlapping 95% CIs*) |
+| H3 | Experience Years → Productivity Gain | **r = −0.01** | **F = 0.69** ($p = 0.554, \eta^2 = 0.00014$) | ✅ Manfaat AI bersifat independen dari senioritas (*overlapping 95% CIs*) |
 
 > [!NOTE]
 > **1. Metodologi & Pengontrolan Variabel Pembaur (Confounder Control):**  
 > Analisis kritis menggunakan **Regresi Multivariat OLS** ($R^2 = 0.8076$) dan **Partial Correlation** ($r_{\text{partial}} = 0.7070$) menunjukkan bahwa korelasi sederhana $r = 0.88$ sebagian dijelaskan oleh jenis perangkat (*Primary_AI_Tool*). Pengguna perangkat koding spesialis (*GitHub Copilot, DeepSeek*) secara alami mengonsumsi token jauh lebih tinggi (~32.000) dan mencatatkan *productivity gain* tinggi (~40%), sedangkan perangkat teks generalist (*ChatGPT, Claude, Gemini*) beroperasi pada ~8.000 token dengan gain ~10%.
 
 > [!NOTE]
-> **2. Metodologi Paritas Senioritas & Batasan Baseline Pre-Adopsi:**  
-> Pengujian hipotesis (One-Way ANOVA $F = 0.6962, p = 0.554$) dan 95% Confidence Intervals yang tumpang-tindih (Junior `[10.7%, 11.8%]`, Mid-Level `[11.0%, 11.8%]`, Senior `[10.9%, 11.6%]`, Veteran `[10.8%, 11.4%]`) mengonfirmasi bahwa **manfaat peningkatan produktivitas AI bersifat independen dari tingkat senioritas pekerja**.  
+> **2. Metodologi Paritas Senioritas, Dynamic f_oneway & Effect Size Eta-Squared ($\eta^2$):**  
+> Pengujian hipotesis menggunakan `scipy.stats.f_oneway()` ($F = 0.6962, p = 0.554241$), **Eta-Squared ($\eta^2 = 0.000139 < 0.01 \implies \text{negligible effect size}$)**, dan 95% Confidence Intervals yang tumpang-tindih (Junior `[10.7%, 11.8%]`, Mid-Level `[11.0%, 11.8%]`, Senior `[10.9%, 11.6%]`, Veteran `[10.8%, 11.4%]`) mengonfirmasi bahwa **manfaat peningkatan produktivitas AI bersifat independen dari tingkat senioritas pekerja**.  
 > *Catatan Metodologis*: Tanpa data produktivitas baseline sebelum adopsi (*Pre-AI Baseline*), korelasi $r \approx -0.01$ tidak secara eksplisit membuktikan klaim bahwa AI "menyamakan" kesenjangan produktivitas junior-senior secara absolut, melainkan membuktikan bahwa persentase gain dari AI terdistribusi secara merata di semua tingkat pengalaman.
 
 > [!NOTE]

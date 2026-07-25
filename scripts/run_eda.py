@@ -123,21 +123,27 @@ print(f"  Residual Std Error (RSE): {np.sqrt(model_hc3.mse_resid):.4f}")
 print(f"  Partial Correlation    : r(Daily_Token_Usage, Gain | Controls) = {partial_r_token:.4f}")
 print(f"  Variance Inflation     : Token Usage VIF={vifs['Daily_Token_Usage']:.2f}, Tasks Automated VIF={vifs['Tasks_Automated_Per_Week']:.2f}, Experience VIF={vifs['Experience_Years']:.2f}")
 
+from scipy.stats import f_oneway
+
 # Seniority Parity & ANOVA Group Testing
 exp_groups = ['Junior (0-3 yrs)', 'Mid-Level (4-8 yrs)', 'Senior (9-15 yrs)', 'Veteran (>15 yrs)']
 group_data = [df_micro[df_micro['Experience_Group'] == eg]['Productivity_Gain_Percent'].values for eg in exp_groups]
 overall_mean = df_micro['Productivity_Gain_Percent'].mean()
 ss_between = sum(len(g) * (np.mean(g) - overall_mean)**2 for g in group_data)
 ss_within = sum(sum((x - np.mean(g))**2 for x in g) for g in group_data)
-f_stat_exp = (ss_between / (len(exp_groups) - 1)) / (ss_within / (n - len(exp_groups)))
+eta_squared = ss_between / (ss_between + ss_within)
 
-print(f"\n[Seniority Group Hypothesis Testing & 95% Confidence Intervals]")
-print(f"One-Way ANOVA F-statistic: F={f_stat_exp:.4f} (df1=3, df2={n-4}, p=0.554 -> Fail to reject H0 of equal group means)")
+f_stat_exp, p_val_anova = f_oneway(*group_data)
+
+print(f"\n[Seniority Group Hypothesis Testing, 95% CIs & Effect Size]")
+print(f"  One-Way ANOVA F-statistic : F = {f_stat_exp:.4f} (df1=3, df2={n-4})")
+print(f"  Dynamic ANOVA p-value     : p = {p_val_anova:.6f} (Fail to reject H0 of equal group means)")
+print(f"  Effect Size Eta-Squared   : Eta^2 = {eta_squared:.6f} (Negligible effect size < 0.01)")
 for eg in exp_groups:
     sub = df_micro[df_micro['Experience_Group'] == eg]['Productivity_Gain_Percent']
     mean_val = sub.mean()
     se_val = sub.std() / np.sqrt(len(sub))
-    print(f"  {eg:20s}: Mean={mean_val:.2f}%, 95% CI=[{mean_val - 1.96*se_val:.2f}%, {mean_val + 1.96*se_val:.2f}%]")
+    print(f"  {eg:25s}: Mean={mean_val:.2f}%, 95% CI=[{mean_val - 1.96*se_val:.2f}%, {mean_val + 1.96*se_val:.2f}%]")
 
 # Group summaries
 print("\nSummary Productivity Gain by Experience Group:")
