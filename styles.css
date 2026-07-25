@@ -57,7 +57,7 @@ body {
     font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    overflow-x: clip;
     width: 100%;
 }
 
@@ -65,7 +65,7 @@ body {
     display: flex;
     min-height: 100vh;
     position: relative;
-    overflow-x: hidden;
+    overflow-x: clip;
     width: 100%;
 }
 
@@ -97,8 +97,9 @@ body {
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
     height: 100vh;
     flex-shrink: 0;
     z-index: 999;
@@ -240,12 +241,11 @@ body {
 /* Main Panel */
 .main-panel {
     flex: 1;
+    margin-left: 260px;
     padding: 28px 36px;
     display: flex;
     flex-direction: column;
     gap: 24px;
-    overflow-y: auto;
-    overflow-x: hidden;
     min-width: 0;
 }
 
@@ -593,6 +593,7 @@ code {
     }
 
     .main-panel {
+        margin-left: 0;
         padding: 20px 16px;
         gap: 20px;
         width: 100%;
