@@ -2,14 +2,7 @@
 // Connects 15,000 dataset records directly to Filters, KPIs, Charts, and Table
 
 let fullUserData = [];
-let macroData = [
-    { period: "2021-01", users: 1.2, gain: 4.8 },
-    { period: "2022-01", users: 5.4, gain: 12.3 },
-    { period: "2023-01", users: 18.5, gain: 28.6 },
-    { period: "2024-01", users: 45.2, gain: 45.1 },
-    { period: "2025-01", users: 78.9, gain: 58.4 },
-    { period: "2026-06", users: 103.9, gain: 71.1 }
-];
+let fullMacroData = [];
 
 let chartToolsInstance = null;
 let chartMacroInstance = null;
@@ -29,12 +22,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadData() {
     try {
-        const response = await fetch('data/user_level_ai_adoption_enriched.csv');
-        if (!response.ok) throw new Error("Failed to load CSV");
-        const csvText = await response.text();
-        fullUserData = parseCSV(csvText);
+        const [userResp, macroResp] = await Promise.all([
+            fetch('data/user_level_ai_adoption_enriched.csv'),
+            fetch('data/ai_adoption_productivity_2021_2026.csv')
+        ]);
+
+        if (userResp.ok) {
+            const userCsvText = await userResp.text();
+            fullUserData = parseCSV(userCsvText);
+            console.log(`Loaded ${fullUserData.length} user records dynamically.`);
+        }
+
+        if (macroResp.ok) {
+            const macroCsvText = await macroResp.text();
+            fullMacroData = parseMacroCSV(macroCsvText);
+            console.log(`Loaded ${fullMacroData.length} macro records dynamically.`);
+        }
         
-        console.log(`Loaded ${fullUserData.length} records dynamically.`);
         applyFilters();
     } catch (err) {
         console.warn("CSV Fetch fallback triggered:", err);
@@ -65,6 +69,66 @@ function parseCSV(text) {
         data.push(row);
     }
     return data;
+}
+
+function parseMacroCSV(text) {
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) return [];
+    
+    const headers = lines[0].split(',').map(h => h.trim());
+    const data = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const vals = lines[i].split(',').map(v => v.trim());
+        const row = {};
+        headers.forEach((h, idx) => {
+            row[h] = vals[idx];
+        });
+        
+        row.Global_Users_Millions = parseFloat(row['Global Active Users (Millions)']) || 0;
+        row.Avg_Tokens = parseFloat(row['Average Tokens/User/Day']) || 0;
+        row.Productivity_Gain_Percent = parseFloat(row['Productivity Gain (%)']) || 0;
+        
+        data.push(row);
+    }
+    return data;
+}
+
+function getAggregatedMacroData(indFilter) {
+    let subset = fullMacroData.filter(row => {
+        if (!indFilter || indFilter === 'ALL') return true;
+        if (row.Industry === indFilter) return true;
+        if (indFilter === 'Finance' && row.Industry === 'Finance & Legal') return true;
+        if (indFilter === 'Marketing' && row.Industry === 'Marketing & Content') return true;
+        return false;
+    });
+
+    if (subset.length === 0) {
+        subset = fullMacroData;
+    }
+
+    const monthMap = {};
+    subset.forEach(r => {
+        const ym = r.YearMonth;
+        if (!ym) return;
+        if (!monthMap[ym]) {
+            monthMap[ym] = { sumUsers: 0, sumGain: 0, count: 0 };
+        }
+        monthMap[ym].sumUsers += r.Global_Users_Millions;
+        monthMap[ym].sumGain += r.Productivity_Gain_Percent;
+        monthMap[ym].count += 1;
+    });
+
+    const sortedMonths = Object.keys(monthMap).sort();
+    return sortedMonths.map(ym => {
+        const item = monthMap[ym];
+        return {
+            period: ym,
+            users: parseFloat(item.sumUsers.toFixed(2)),
+            gain: parseFloat((item.sumGain / item.count).toFixed(2))
+        };
+    });
 }
 
 function getFilteredData() {
@@ -143,34 +207,72 @@ function initCharts() {
     chartMacroInstance = new Chart(ctxMacro, {
         type: 'line',
         data: {
-            labels: macroData.map(d => d.period),
+            labels: [],
             datasets: [
                 {
                     label: 'Global Active Users (M)',
-                    data: macroData.map(d => d.users),
+                    data: [],
                     borderColor: '#818cf8',
                     backgroundColor: 'rgba(129, 140, 248, 0.08)',
                     fill: true,
                     tension: 0.3,
-                    borderWidth: 2
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
+                    yAxisID: 'y'
                 },
                 {
                     label: 'Avg Productivity Gain (%)',
-                    data: macroData.map(d => d.gain),
+                    data: [],
                     borderColor: '#34d399',
                     borderDash: [4, 4],
                     tension: 0.3,
-                    borderWidth: 2
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
+                    yAxisID: 'y1'
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 8, font: { size: 10 } } } },
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: { labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 8, font: { size: 10 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y + (context.datasetIndex === 1 ? '%' : ' M');
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
             scales: {
-                x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1a2438' } },
-                y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1a2438' } }
+                x: {
+                    ticks: { color: '#94a3b8', font: { size: 10 }, maxRotation: 45, autoSkip: true, maxTicksLimit: 16 },
+                    grid: { color: '#1a2438' }
+                },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    ticks: { color: '#818cf8', font: { size: 10 } },
+                    grid: { color: '#1a2438' }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    ticks: { color: '#34d399', font: { size: 10 } },
+                    grid: { drawOnChartArea: false }
+                }
             }
         }
     });
@@ -298,6 +400,15 @@ function updateCharts(data) {
         }]
     };
     chartExpInstance.update();
+
+    // 4. Macro Trend Aggregations
+    const indFilter = document.getElementById('filter-industry').value;
+    const aggregatedMacro = getAggregatedMacroData(indFilter);
+
+    chartMacroInstance.data.labels = aggregatedMacro.map(d => d.period);
+    chartMacroInstance.data.datasets[0].data = aggregatedMacro.map(d => d.users);
+    chartMacroInstance.data.datasets[1].data = aggregatedMacro.map(d => d.gain);
+    chartMacroInstance.update();
 }
 
 function renderTable(data) {

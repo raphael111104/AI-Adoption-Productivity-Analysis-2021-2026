@@ -34,27 +34,37 @@ Project ini memanfaatkan **2 dataset komprehensif** — Tren Makro Bulanan & Mic
 
 Berdasarkan analisis statistik terhadap 15.000 data pengguna:
 
-### 📊 Korelasi & Hipotesis
-| Hipotesis | Variabel | Pearson r | Kesimpulan |
-|:----------|:---------|:---------:|:-----------|
-| H1 | Token Usage → Productivity Gain | **r = 0.88** | ✅ Korelasi positif sangat kuat |
-| H2 | Tasks Automated → Productivity Gain | **r = 0.74** | ✅ Korelasi positif kuat |
-| H3 | Experience Years → Productivity Gain | **r = −0.01** | ✅ Tidak ada korelasi (AI = Great Equalizer) |
+### 📊 Korelasi, Pemodelan Multivariat & Hipotesis
+| Hipotesis | Variabel | Pearson r (Naive) | Partial r / Regresi / ANOVA | Kesimpulan |
+|:----------|:---------|:-----------------:|:--------------------------:|:-----------|
+| H1 | Token Usage → Productivity Gain | **r = 0.88** | **r_partial = 0.71** ($R^2 = 0.81$) | ✅ Korelasi positif kuat, dipengaruhi oleh faktor pembaur (*tool category confounding*) |
+| H2 | Tasks Automated → Productivity Gain | **r = 0.55** | **β = +1.99** per task | ✅ Korelasi positif kuat dengan efek langsung yang signifikan |
+| H3 | Experience Years → Productivity Gain | **r = −0.01** | **F = 0.69** ($p = 0.554$) | ✅ Manfaat AI bersifat independen dari senioritas (*overlapping 95% CIs*) |
+
+> [!NOTE]
+> **1. Metodologi & Pengontrolan Variabel Pembaur (Confounder Control):**  
+> Analisis kritis menggunakan **Regresi Multivariat OLS** ($R^2 = 0.8076$) dan **Partial Correlation** ($r_{\text{partial}} = 0.7070$) menunjukkan bahwa korelasi sederhana $r = 0.88$ sebagian dijelaskan oleh jenis perangkat (*Primary_AI_Tool*). Pengguna perangkat koding spesialis (*GitHub Copilot, DeepSeek*) secara alami mengonsumsi token jauh lebih tinggi (~32.000) dan mencatatkan *productivity gain* tinggi (~40%), sedangkan perangkat teks generalist (*ChatGPT, Claude, Gemini*) beroperasi pada ~8.000 token dengan gain ~10%.
+
+> [!NOTE]
+> **2. Metodologi Paritas Senioritas & Batasan Baseline Pre-Adopsi:**  
+> Pengujian hipotesis (One-Way ANOVA $F = 0.6962, p = 0.554$) dan 95% Confidence Intervals yang tumpang-tindih (Junior `[10.7%, 11.8%]`, Mid-Level `[11.0%, 11.8%]`, Senior `[10.9%, 11.6%]`, Veteran `[10.8%, 11.4%]`) mengonfirmasi bahwa **manfaat peningkatan produktivitas AI bersifat independen dari tingkat senioritas pekerja**.  
+> *Catatan Metodologis*: Tanpa data produktivitas baseline sebelum adopsi (*Pre-AI Baseline*), korelasi $r \approx -0.01$ tidak secara eksplisit membuktikan klaim bahwa AI "menyamakan" kesenjangan produktivitas junior-senior secara absolut, melainkan membuktikan bahwa persentase gain dari AI terdistribusi secara merata di semua tingkat pengalaman.
 
 ### 🛠️ Performa Tools AI
 | AI Tool | Avg Productivity Gain | Karakteristik |
 |:--------|:---------------------:|:--------------|
-| GitHub Copilot | **~42%** | Specialist coding — otomatisasi tinggi |
-| DeepSeek | **~41%** | Domain teknis, output terstruktur |
-| ChatGPT (OpenAI) | **~11%** | Generalist, luas namun tidak spesifik |
-| Claude (Anthropic) | **~10%** | Generalist text & reasoning |
-| Gemini (Google) | **~10%** | Generalist multimodal |
-| Midjourney | **~2%** | Creative/visual — ROI rendah pada task automation |
+| GitHub Copilot | **~40%** | Specialist coding — otomatisasi tinggi, konsumsi token tinggi (~32.3k) |
+| DeepSeek | **~43%** | Domain teknis, output terstruktur (~32.8k token) |
+| ChatGPT (OpenAI) | **~10%** | Generalist, luas namun tidak spesifik (~8.0k token) |
+| Claude (Anthropic) | **~10%** | Generalist text & reasoning (~8.0k token) |
+| Gemini (Google) | **~10%** | Generalist multimodal (~8.0k token) |
+| Perplexity | **~10%** | Generalist search & text (~8.0k token) |
+| Midjourney | **~2%** | Creative/visual — ROI rendah pada task automation (~1.8k token) |
 
 ### 🏭 Insight Industri
 - **Software Development** & **Finance** mencatatkan productivity gain tertinggi dari seluruh sektor.
-- **Token Usage** adalah prediktor terkuat produktivitas — semakin tinggi kuota token, semakin besar efisiensi kerja.
-- AI terbukti sebagai **"productivity equalizer"** — pekerja Junior mendapat manfaat setara dengan pekerja Senior/Veteran.
+- **Konsumsi Token & Otomatisasi Tugas** berkontribusi positif terhadap produktivitas ($r_{\text{partial}} = 0.71$, $+1.07\%$ gain per 1.000 token harian), namun alokasi kuota harus memperhatikan jenis perangkat dan alur kerja.
+- Manfaat adopsi AI terbukti **independen dari tingkat pengalaman** — pekerja Junior, Mid-Level, Senior, dan Veteran memperoleh persentase peningkatan produktivitas rata-rata yang seragam (~11.1% – 11.4%).
 
 ---
 
@@ -163,8 +173,8 @@ jupyter notebook critical_data_analysis.ipynb
 
 ## 🔬 Rekomendasi Strategis
 
-1. **Targeted AI Tooling** — Prioritaskan tools AI terspealisasi (*Copilot, DeepSeek*) untuk divisi teknis dibanding lisensi generalist semua divisi.
-2. **Optimasi Kuota Token** — Karena korelasi token–produktivitas sangat tinggi (`r = 0.88`), sediakan batas token harian yang memadai agar tidak jadi bottleneck efisiensi.
+1. **Targeted AI Tooling** — Prioritaskan tools AI terspesialisasi (*Copilot, DeepSeek*) untuk divisi teknis dibanding lisensi generalist semua divisi.
+2. **Tata Kelola Kuota Token Berbasis Perangkat & Peran (Role & Tool-Aware Token Governance)** — Hindari asumsi naif bahwa menaikkan kuota token secara umum akan otomatis meningkatkan produktivitas ($r = 0.88$ dipengaruhi oleh kategori perangkat). Kuota token harus dialokasikan secara selektif berdasarkan kebutuhan alur kerja spesifik.
 3. **Standardisasi Task Automation** — Dorong penggunaan AI untuk otomatisasi alur kerja berulang, bukan sekadar *Q&A*.
 4. **Mitigasi Bias Self-Reporting** — Gabungkan metrik persepsi produktivitas dengan data objektif (*PR completion time, ticket closure rate*) untuk riset lanjutan.
 

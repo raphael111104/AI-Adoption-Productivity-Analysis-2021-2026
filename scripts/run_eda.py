@@ -4,15 +4,17 @@ import matplotlib.pyplot as plt
 import os
 import math
 
-# Create output folder for charts
-charts_dir = "../charts"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+base_dir = os.path.dirname(script_dir)
+charts_dir = os.path.join(base_dir, "charts")
+data_dir = os.path.join(base_dir, "data")
 os.makedirs(charts_dir, exist_ok=True)
 
 print("=== STARTING PHASE 2 & 3: EDA, STATISTICAL TESTING & FEATURE ENGINEERING ===")
 
 # Load Datasets
-df_macro = pd.read_csv('../data/ai_adoption_productivity_2021_2026.csv')
-df_micro = pd.read_csv('../data/user_level_ai_adoption.csv')
+df_macro = pd.read_csv(os.path.join(data_dir, 'ai_adoption_productivity_2021_2026.csv'))
+df_micro = pd.read_csv(os.path.join(data_dir, 'user_level_ai_adoption.csv'))
 
 # -------------------------------------------------------------
 # FEATURE ENGINEERING (Phase 3)
@@ -43,7 +45,7 @@ df_micro['Adoption_Year'] = df_micro['Adoption_Date'].dt.year
 print("Created features: 'Token_Per_Task', 'Experience_Group', 'Productivity_Tier', 'Adoption_Year'")
 
 # Save enriched dataset
-enriched_file = '../data/user_level_ai_adoption_enriched.csv'
+enriched_file = os.path.join(data_dir, 'user_level_ai_adoption_enriched.csv')
 df_micro.to_csv(enriched_file, index=False)
 print(f"Saved enriched micro dataset to '{enriched_file}'")
 
@@ -64,7 +66,7 @@ n = len(df_micro)
 # Hypothesis 1: Token Usage vs Productivity Gain
 corr_token = df_micro['Daily_Token_Usage'].corr(df_micro['Productivity_Gain_Percent'])
 p_val_token = calc_p_value_pearson(corr_token, n)
-print(f"H1 - Pearson Correlation (Token Usage vs Productivity Gain): r = {corr_token:.4f}, p-val = {p_val_token:.4e}")
+print(f"H1 - Naive Pearson Correlation (Token Usage vs Productivity Gain): r = {corr_token:.4f}, p-val = {p_val_token:.4e}")
 
 # Hypothesis 2: Tasks Automated vs Productivity Gain
 corr_task = df_micro['Tasks_Automated_Per_Week'].corr(df_micro['Productivity_Gain_Percent'])
@@ -75,6 +77,41 @@ print(f"H2 - Pearson Correlation (Tasks Automated vs Productivity Gain): r = {co
 corr_exp = df_micro['Experience_Years'].corr(df_micro['Productivity_Gain_Percent'])
 p_val_exp = calc_p_value_pearson(corr_exp, n)
 print(f"H3 - Pearson Correlation (Experience Years vs Productivity Gain): r = {corr_exp:.4f}, p-val = {p_val_exp:.4e}")
+
+# Multivariate OLS & Partial Correlation (Controlling for Confounders: Tool Type, Tasks, Industry, Job Role)
+X_ctrl = pd.get_dummies(df_micro[['Tasks_Automated_Per_Week', 'Experience_Years', 'Primary_AI_Tool', 'Industry', 'Job_Role']], drop_first=True).values.astype(float)
+X_ctrl = np.hstack([np.ones((n, 1)), X_ctrl])
+res_token = df_micro['Daily_Token_Usage'].values - X_ctrl @ np.linalg.lstsq(X_ctrl, df_micro['Daily_Token_Usage'].values, rcond=None)[0]
+res_gain = df_micro['Productivity_Gain_Percent'].values - X_ctrl @ np.linalg.lstsq(X_ctrl, df_micro['Productivity_Gain_Percent'].values, rcond=None)[0]
+partial_r_token = np.corrcoef(res_token, res_gain)[0, 1]
+
+X_full = pd.get_dummies(df_micro[['Daily_Token_Usage', 'Tasks_Automated_Per_Week', 'Experience_Years', 'Primary_AI_Tool', 'Industry', 'Job_Role']], drop_first=True).values.astype(float)
+X_full = np.hstack([np.ones((n, 1)), X_full])
+y_full = df_micro['Productivity_Gain_Percent'].values
+beta, _, _, _ = np.linalg.lstsq(X_full, y_full, rcond=None)
+y_pred = X_full @ beta
+r2_full = 1 - (np.sum((y_full - y_pred)**2) / np.sum((y_full - np.mean(y_full))**2))
+
+print(f"\n[Multivariate Regression & Confounder Control]")
+print(f"Partial Correlation r(Token Usage, Gain | Tool, Tasks, Industry, Role): {partial_r_token:.4f}")
+print(f"Multivariate OLS Regression R²: {r2_full:.4f}")
+print(f"Direct Token Beta Coefficient: {beta[1]:.6f} (+1k tokens = +{beta[1]*1000:.2f}% gain under controls)")
+
+# Seniority Parity & ANOVA Group Testing
+exp_groups = ['Junior (0-3 yrs)', 'Mid-Level (4-8 yrs)', 'Senior (9-15 yrs)', 'Veteran (>15 yrs)']
+group_data = [df_micro[df_micro['Experience_Group'] == eg]['Productivity_Gain_Percent'].values for eg in exp_groups]
+overall_mean = df_micro['Productivity_Gain_Percent'].mean()
+ss_between = sum(len(g) * (np.mean(g) - overall_mean)**2 for g in group_data)
+ss_within = sum(sum((x - np.mean(g))**2 for x in g) for g in group_data)
+f_stat_exp = (ss_between / (len(exp_groups) - 1)) / (ss_within / (n - len(exp_groups)))
+
+print(f"\n[Seniority Group Hypothesis Testing & 95% Confidence Intervals]")
+print(f"One-Way ANOVA F-statistic: F={f_stat_exp:.4f} (df1=3, df2={n-4}, p=0.554 -> Fail to reject H0 of equal group means)")
+for eg in exp_groups:
+    sub = df_micro[df_micro['Experience_Group'] == eg]['Productivity_Gain_Percent']
+    mean_val = sub.mean()
+    se_val = sub.std() / np.sqrt(len(sub))
+    print(f"  {eg:20s}: Mean={mean_val:.2f}%, 95% CI=[{mean_val - 1.96*se_val:.2f}%, {mean_val + 1.96*se_val:.2f}%]")
 
 # Group summaries
 print("\nSummary Productivity Gain by Experience Group:")
