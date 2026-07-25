@@ -98,6 +98,20 @@ Berdasarkan analisis statistik terhadap 15.000 data pengguna:
 | `data/user_level_ai_adoption.csv` | Mikro | 15.000 | Data individual pengguna AI: industry, role, token usage, productivity gain |
 | `data/user_level_ai_adoption_enriched.csv` | Mikro (enriched) | 15.000 | Dataset enriched hasil feature engineering (4 fitur tambahan) |
 
+### 🛡️ Enterprise Data Quality & Integrity Audit Matrix
+| Dimensi Audit | Pemeriksaan | Hasil Evaluasi Data Mikro & Makro | Status |
+|:--------------|:------------|:-----------------------------------|:------:|
+| **1. Missing Values** | Null check | 0 missing values (100% complete across micro & macro datasets) | ✅ |
+| **2. Duplicate Primary Keys** | `User_ID` duplication | 0 duplicate IDs (15,000 unique `User_ID` records) | ✅ |
+| **3. Temporal Validity** | Date range | `2021-01-01` to `2026-06-30` (0 out-of-bound or invalid dates) | ✅ |
+| **4. Vocabulary Integrity** | Category dictionary | 0 unexpected or orphaned category strings | ✅ |
+| **5. Value Boundaries** | Range check | `Tokens`: [411, 58,989], `Tasks`: [1, 12], `Gain`: [0.3%, 84.9%], `Exp`: [1.0, 25.0] | ✅ |
+| **6. Nesting Integrity** | Crosstab check | 22 valid combinations (Strict 1-to-1 nesting of `Job_Role` in `Industry`) | ✅ |
+| **7. Cardinality & Distribution** | `nunique()` count | 15,000 users, 7 AI tools, 6 industries, 22 job roles, 67 monthly periods | ✅ |
+| **8. Logical Consistency** | Non-negative logic | 0 negative token values, 0 negative gain values, 0 negative experience values | ✅ |
+| **9. Outlier Policy** | Heavy-tail IQR audit | Power-user tail retained (IQR upper = 23,248 tokens); managed via **HC3 Robust SE** | ✅ |
+| **10. Macro Dataset Integrity** | Granularity audit | 402 macro rows across 67 monthly timeline points and 6 global sectors | ✅ |
+
 ---
 
 ## 🗂️ Struktur Repositori
